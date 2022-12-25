@@ -11,9 +11,14 @@ version = "0.43.0"
 features = [
     "Win32_System",
     "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_UI",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_System_Com_UI",
     "Win32_Foundation",
     "Media_Audio",
     "Win32_Media_Audio",
     "Win32_Media_Audio_Endpoints",
-    "implement"
+    "implement",
 ]
