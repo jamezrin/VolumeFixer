@@ -6,6 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ctrlc = "3.2.4"
+log = "0.4.17"
+env_logger = "0.10.0"
+
 [dependencies.windows]
 version = "0.43.0"
 features = [
@@ -14,6 +18,8 @@ features = [
     "Win32_System_Com_StructuredStorage",
     "Win32_UI",
     "Win32_UI_Shell",
+    "Win32_UI_Input",
+    "Win32_UI_Shell_Common",
     "Win32_UI_Shell_PropertiesSystem",
     "Win32_System_Com_UI",
     "Win32_Foundation",
