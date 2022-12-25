@@ -14,11 +14,13 @@ use windows::{
     Win32::Media::Audio::Endpoints::*,
     Win32::System::*,
     Win32::System::Com::*,
+    Win32::Devices::FunctionDiscovery::*,
     Win32::UI::*,
     Win32::UI::Shell::*,
 };
 
 use log::{info, warn};
+use windows::Win32::UI::Shell::PropertiesSystem::{PropVariantToBSTR, PropVariantToString, PropVariantToStringAlloc, PSCreatePropertyStoreFromObject};
 
 #[implement(IAudioEndpointVolumeCallback)]
 struct AppIAudioEndpointVolumeCallback {}
@@ -37,7 +39,7 @@ impl IAudioEndpointVolumeCallback_Impl for AppIAudioEndpointVolumeCallback {
             change.afChannelVolumes[0]
         );
 
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -134,9 +136,38 @@ fn hook_audio_device(device: &IMMDevice) -> Result<()> {
         let interface : IAudioEndpointVolumeCallback = volume_control_cb.into();
         audio_endpoint_volume.RegisterControlChangeNotify(&interface)?;
 
-        info!("RegisterControlChangeNotify {:?} {}", device, device.GetId().unwrap().to_string()?);
-
         let property_store = device.OpenPropertyStore(STGM_READ)?;
+
+        // https://github.com/microsoft/windows-rs/issues/1685
+        // https://github.com/microsoft/windows-rs/issues/595
+        /*
+        pub struct PWSTR(pub *mut u16);
+
+        impl PWSTR {
+            /// Construct a new `PWSTR` from a raw pointer.
+            pub const fn from_raw(ptr: *mut u16) -> Self {
+                Self(ptr)
+            }
+
+            /// Construct a null `PWSTR`.
+            pub fn null() -> Self {
+                Self(std::ptr::null_mut())
+            }
+
+            /// Returns a raw pointer to the `PWSTR`.
+            pub fn as_ptr(&self) -> *mut u16 {
+                self.0
+            }
+        */
+        let friendly_name_ret = PropVariantToStringAlloc(
+            &property_store.GetValue(&PKEY_Device_FriendlyName)?
+        )?;
+
+        let friendly_name = friendly_name_ret.to_string()?;
+
+        CoTaskMemFree(Some(friendly_name_ret.as_ptr() as *const core::ffi::c_void));
+
+        info!("RegisterControlChangeNotify {:?} {:?} {}", friendly_name, device, device.GetId().unwrap().to_string()?);
 
         /*
         loop {
