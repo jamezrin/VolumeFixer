@@ -159,13 +159,13 @@ fn hook_audio_device(device: &IMMDevice) -> Result<()> {
                 self.0
             }
         */
-        let friendly_name_ret = PropVariantToStringAlloc(
-            &property_store.GetValue(&PKEY_Device_FriendlyName)?
+        let mut friendly_name_buffer = vec![0; 255];
+        PropVariantToString(
+            &property_store.GetValue(&PKEY_Device_FriendlyName)?,
+            &mut friendly_name_buffer
         )?;
 
-        let friendly_name = friendly_name_ret.to_string()?;
-
-        CoTaskMemFree(Some(friendly_name_ret.as_ptr() as *const core::ffi::c_void));
+        let friendly_name = String::from_utf16(&friendly_name_buffer);
 
         info!("RegisterControlChangeNotify {:?} {:?} {}", friendly_name, device, device.GetId().unwrap().to_string()?);
 
